@@ -70,17 +70,21 @@
                 if (sql == null||sql=="") {
                     //循环把所有添加的字段和数据加到sql中
                     for (var i = 0; i <addid; i++) {
-                        
+                        if($("#columns" + i).val()!=null&& $("#columns" + i).val()!=""&&$("#datas" + i).val()!=null&&$("#datas" + i).val()!="")
+                        {
                         choosedcollumns = choosedcollumns + $("#columns" + i).val()+ ",";
                         chooseddatas = chooseddatas+$("#datas" + i).val()+ ",";
+                        }
                     }
                     sql="insert into xxxxx(字段占位)values(数据占位);"
                 }else{
                     //循环把所有添加的字段和数据加到sql中
                     for (var i = 0; i < addid; i++) {
-                        
+                        if($("#columns" + i).val()!=null&& $("#columns" + i).val()!=""&&$("#datas" + i).val()!=null&&$("#datas" + i).val()!="")
+                        {
                         choosedcollumns = choosedcollumns + $("#columns" + i).val()+ ",";
                         chooseddatas = chooseddatas+$("#datas" + i).val()+ ",";
+                        }
                     }
                 }
 
