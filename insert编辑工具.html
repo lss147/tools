@@ -6,6 +6,8 @@
     <title>sql工具</title>
     <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
     <script>
+        //记录添加的字段的数量
+        var addid = 0;
         function parseinsert() {
             var r = /(?<=\()[^\)]+(?=\))/g;
             var sql = $("#sqltext").val();
@@ -19,6 +21,16 @@
 
             }
             $("#tabs").empty().append(result);
+            addid=0
+        }
+
+        function addcolumn() {
+
+            var result = "";
+            result += "<div><label for='ckb'><input type='text' id='columns" + addid + "' placeholder='请输入字段名'></label>";
+            result += "<input  type='text'  id='datas" + addid + "' placeholder='请输入数据'></input></div>";
+            addid++;
+            $("#tabs").append(result);
         }
         function generateinsert() {
 
@@ -33,29 +45,52 @@
                     ids.push(parseInt(id));
                 }
             }
-            var r = /(?<=\()[^\)]+(?=\))/g;
-            var sql = $("#sqltext").val();
-            var collumns = (sql.match(r)[0]).replace(/\"/g, "\"").split(",");
-            var datas = (sql.match(r)[1]).split(",");
             var choosedcollumns = "";
             var chooseddatas = "";
-            sql = sql.replace(collumns, "字段占位").replace(datas, "数据占位")
+            var r = /(?<=\()[^\)]+(?=\))/g;
+            var sql = $("#sqltext").val();
+            if (sql != null && sql != "") {
+                var collumns = (sql.match(r)[0]).replace(/\"/g, "\"").split(",");
+                var datas = (sql.match(r)[1]).split(",");
+                
+                sql = sql.replace(collumns, "字段占位").replace(datas, "数据占位")
 
-            var result = "";
-            for (var i = 0; i < collumns.length; i++) {
+                var result = "";
+                for (var i = 0; i < collumns.length; i++) {
 
-                if (ids.indexOf(i) >= 0) {
-                    choosedcollumns = choosedcollumns + collumns[i] + ","
-                    chooseddatas = chooseddatas + $("#sqltext" + i).val() + ","
+                    if (ids.indexOf(i) >= 0) {
+                        choosedcollumns = choosedcollumns + collumns[i] + ","
+                        chooseddatas = chooseddatas + $("#sqltext" + i).val() + ","
+                    }
                 }
+                
+               
+            }
+            if (addid > 0) {
+                if (sql == null||sql=="") {
+                    //循环把所有添加的字段和数据加到sql中
+                    for (var i = 0; i <addid; i++) {
+                        
+                        choosedcollumns = choosedcollumns + $("#columns" + i).val()+ ",";
+                        chooseddatas = chooseddatas+$("#datas" + i).val()+ ",";
+                    }
+                    sql="insert into xxxxx(字段占位)values(数据占位);"
+                }else{
+                    //循环把所有添加的字段和数据加到sql中
+                    for (var i = 0; i < addid; i++) {
+                        
+                        choosedcollumns = choosedcollumns + $("#columns" + i).val()+ ",";
+                        chooseddatas = chooseddatas+$("#datas" + i).val()+ ",";
+                    }
+                }
+
             }
             choosedcollumns = choosedcollumns.substring(0, choosedcollumns.length - 1);
-            chooseddatas = chooseddatas.substring(0, chooseddatas.length - 1);
+                chooseddatas = chooseddatas.substring(0, chooseddatas.length - 1);
+
             var resultsql = sql.replace("字段占位", choosedcollumns).replace("数据占位", chooseddatas)
 
-
-
-            $("#tabs").append("<div><input id='sqltext' type='text' placeholder='请输入sql文本！' value=\"" + resultsql + "\" name='resultsql'></div>");
+            $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + resultsql + "\" name='resultsql'></div>");
         }
 
 
@@ -97,6 +132,7 @@
     <input type="checkbox" id="selectAll" />全选
     <button onclick="parseinsert()">解析insert</button>
     <button onclick="generateinsert()">生成选中字段的insert</button>
+    <button onclick="addcolumn()">增加字段</button>
     <p id="demo"></p>
     <div id="tabs"></div>
 </body>
