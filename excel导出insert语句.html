@@ -15,6 +15,7 @@
     <input id="sqltext" type="text" placeholder="请输入sql文本！" name="" />
     <p></p>
     <input type="checkbox" id="selectAll" />全选
+    <input type="checkbox" id="selectNotEmpty" />选中非空
     <button onclick="parseinsert()">解析insert</button>
     <button onclick="generateinsert()">生成选中字段的insert</button>
     <button onclick="addcolumn()">增加字段</button>
@@ -202,7 +203,7 @@
                     for (var i = 0; i < labels.length; i++) {
                         var obj = labels[i];
                         //判断是否是checkbox并且已经选中
-                        if (obj.type == "checkbox" && obj.id != "selectAll") {
+                        if (obj.type == "checkbox" && obj.id != "selectAll"&& obj.id != "selectNotEmpty") {
 
                             obj.checked = true
                         }
@@ -211,7 +212,7 @@
                     for (var i = 0; i < labels.length; i++) {
                         var obj = labels[i];
                         //判断是否是checkbox并且已经选中
-                        if (obj.type == "checkbox" && obj.id != "selectAll") {
+                        if (obj.type == "checkbox" && obj.id != "selectAll"&& obj.id != "selectNotEmpty") {
 
                             obj.checked = false
                         }
@@ -220,6 +221,43 @@
             })
 
         });
+
+
+        $(function () {
+            var i = 0;
+            //全选
+            $("#selectNotEmpty").on("click", function () {
+                var labels = document.getElementsByTagName("input");
+                if (document.getElementById("selectNotEmpty").checked == true) {
+                    for (var i = 0; i < labels.length; i++) {
+                        var obj = labels[i];
+                        //判断是否是checkbox并且已经选中
+                        if (obj.type == "checkbox" && obj.id != "selectNotEmpty"&& obj.id != "selectAll") {
+                            if($("#sqltext" + obj.id).val()==null ||$("#sqltext" + obj.id).val()==""){
+                                obj.checked = false
+                            }
+                            else{ obj.checked = true
+                             
+                            }
+                           
+                            
+                        }
+                    }
+                } else {
+                    for (var i = 0; i < labels.length; i++) {
+                        var obj = labels[i];
+                        //判断是否是checkbox并且已经选中
+                        if (obj.type == "checkbox" && obj.id != "selectNotEmpty"&& obj.id != "selectAll") {
+
+                            obj.checked = false
+                        }
+                    }
+                }
+            })
+
+        });
+
+
 
         Array.prototype.indexOf = function (val) {
             for (var i = 0; i < this.length; i++) {
