@@ -11,7 +11,14 @@
 <body>
     <div>上传excel生成insert语句</div>
     <input type="file" onchange="importf(this)" />
-    <div id="demo"></div>
+    <p>待编辑的insert语句</p>
+    <input id="sqltext" type="text" placeholder="请输入sql文本！" name="" />
+    <p></p>
+    <input type="checkbox" id="selectAll" />全选
+    <button onclick="parseinsert()">解析insert</button>
+    <button onclick="generateinsert()">生成选中字段的insert</button>
+    <button onclick="addcolumn()">增加字段</button>
+    <p id="demo"></p>
     <div id="tabs"></div>
     <script>
         /*
@@ -63,7 +70,8 @@
                     columns="insert into xxxx (";
                     values=" values( ";
                 }
-                $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + insertsql + "\" name='resultsql'></div>");
+               // $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + insertsql + "\" name='resultsql'></div>");
+               document.getElementById("sqltext").value=insertsql;
                 console.log(insertsql)
     
             };
@@ -82,6 +90,151 @@
             o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w)));
             return o;
         }
+
+
+
+
+      //记录添加的字段的数量
+      var addid = 0;
+        // //记录sql语句的数量
+        // var sqlnums;
+        function parseinsert() {
+            var r = /(?<=\()[^\)]+(?=\))/g;
+            // var sqlgroup = $("#sqltext").val().split(";")
+            // sqlgroup.remove("");
+            // sqlnums = sqlgroup.length;
+            // if (sqlnums == 1) {
+                var sql = $("#sqltext").val();
+                var collumns = (sql.match(r)[0]).replace(/\"/g, "\"").split(",");
+
+                var datas = (sql.match(r)[1]).split(",");
+                var result = "";
+                for (var i = 0; i < collumns.length; i++) {
+                    result += "<div><label for='ckb" + i + "'><input type='checkbox' id='" + i + "'name='ckbs' >" + collumns[i] + "</label>";
+                    result += "<input id='sqltext" + i + "' type='text'  name='data" + i + "' value=\"" + datas[i] + "\"></input></div>";
+
+                }
+                $("#tabs").empty().append(result);
+                addid = 0
+            // } else {
+
+            // }
+        }
+
+        function addcolumn() {
+
+            var result = "";
+            result += "<div><label for='ckb'><input type='text' id='columns" + addid + "' placeholder='请输入字段名'></label>";
+            result += "<input  type='text'  id='datas" + addid + "' placeholder='请输入数据'></input></div>";
+            addid++;
+            $("#tabs").append(result);
+        }
+        function generateinsert() {
+
+
+            var labels = document.getElementsByTagName("input");
+            var ids = [];
+            for (var i = 0; i < labels.length; i++) {
+                var obj = labels[i];
+                //判断是否是checkbox并且已经选中
+                if (obj.type == "checkbox" && obj.checked) {
+                    var id = obj.id;//获取checkbox的值
+                    ids.push(parseInt(id));
+                }
+            }
+            var choosedcollumns = "";
+            var chooseddatas = "";
+            var r = /(?<=\()[^\)]+(?=\))/g;
+            var sql = $("#sqltext").val();
+            if (sql != null && sql != "") {
+                var collumns = (sql.match(r)[0]).replace(/\"/g, "\"").split(",");
+                var datas = (sql.match(r)[1]).split(",");
+
+                sql = sql.replace(collumns, "字段占位").replace(datas, "数据占位")
+
+                var result = "";
+                for (var i = 0; i < collumns.length; i++) {
+
+                    if (ids.indexOf(i) >= 0) {
+                        choosedcollumns = choosedcollumns + collumns[i] + ","
+                        chooseddatas = chooseddatas + $("#sqltext" + i).val() + ","
+                    }
+                }
+
+
+            }
+            if (addid > 0) {
+                if (sql == null || sql == "") {
+                    //循环把所有添加的字段和数据加到sql中
+                    for (var i = 0; i < addid; i++) {
+                        if ($("#columns" + i).val() != null && $("#columns" + i).val() != "" && $("#datas" + i).val() != null && $("#datas" + i).val() != "") {
+                            choosedcollumns = choosedcollumns + $("#columns" + i).val() + ",";
+                            chooseddatas = chooseddatas + $("#datas" + i).val() + ",";
+                        }
+                    }
+                    sql = "insert into xxxxx(字段占位)values(数据占位);"
+                } else {
+                    //循环把所有添加的字段和数据加到sql中
+                    for (var i = 0; i < addid; i++) {
+                        if ($("#columns" + i).val() != null && $("#columns" + i).val() != "" && $("#datas" + i).val() != null && $("#datas" + i).val() != "") {
+                            choosedcollumns = choosedcollumns + $("#columns" + i).val() + ",";
+                            chooseddatas = chooseddatas + $("#datas" + i).val() + ",";
+                        }
+                    }
+                }
+
+            }
+            choosedcollumns = choosedcollumns.substring(0, choosedcollumns.length - 1);
+            chooseddatas = chooseddatas.substring(0, chooseddatas.length - 1);
+
+            var resultsql = sql.replace("字段占位", choosedcollumns).replace("数据占位", chooseddatas)
+
+            $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + resultsql + "\" name='resultsql'></div>");
+        }
+
+
+        $(function () {
+            var i = 0;
+            //全选
+            $("#selectAll").on("click", function () {
+                var labels = document.getElementsByTagName("input");
+                if (document.getElementById("selectAll").checked == true) {
+                    for (var i = 0; i < labels.length; i++) {
+                        var obj = labels[i];
+                        //判断是否是checkbox并且已经选中
+                        if (obj.type == "checkbox" && obj.id != "selectAll") {
+
+                            obj.checked = true
+                        }
+                    }
+                } else {
+                    for (var i = 0; i < labels.length; i++) {
+                        var obj = labels[i];
+                        //判断是否是checkbox并且已经选中
+                        if (obj.type == "checkbox" && obj.id != "selectAll") {
+
+                            obj.checked = false
+                        }
+                    }
+                }
+            })
+
+        });
+
+        Array.prototype.indexOf = function (val) {
+            for (var i = 0; i < this.length; i++) {
+                if (this[i] == val) return i;
+            }
+            return -1;
+        };
+        Array.prototype.remove = function (val) {
+            var index = this.indexOf(val);
+            if (index > -1) {
+                this.splice(index, 1);
+            }
+        };
+
+
     </script>
 </body>
 
