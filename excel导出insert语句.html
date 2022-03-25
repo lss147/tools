@@ -60,10 +60,12 @@
                 }
                 //wb.SheetNames[0]是获取Sheets中第一个Sheet的名字
                 //wb.Sheets[Sheet名]获取第一个Sheet的数据
-
+                //删掉文件名可能出现的下划线数字后缀
+                var reg=/_\d+$/;
+                var fileName=file.name.replace(".xls","")
                 var columnsAndValuesjson = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
                 var values=" values( ";
-                var columns="insert into "+file.name.replace(".xls","")+" (";
+                var columns="insert into "+fileName.replace(fileName.match(reg)[0],"")+" (";
                 var insertsql="";
 
                 for (var i = 0, l = columnsAndValuesjson.length; i < l; i++) {
@@ -86,7 +88,7 @@
                         //console.log(key + ':' + columnsAndValuesjson[i][key]);
                     }
                     insertsql+=columns.substring(0, columns.length - 1)+")"+values.substring(0, values.length - 1)+");";
-                    columns="insert into "+file.name.replace(".xls","")+" (";
+                    columns="insert into "+fileName.replace(fileName.match(reg)[0],"")+" (";
                     values=" values( ";
                 }
                // $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + insertsql + "\" name='resultsql'></div>");
@@ -158,6 +160,9 @@
             }
             $("#tabs").empty().append(result);
             addid = 0
+            //两个checkbox置空
+            document.getElementById("selectAll").checked=false
+            document.getElementById("selectNotEmpty").checked=false
         }
 
         function addcolumn() {
@@ -223,11 +228,11 @@
             choosedcollumns = choosedcollumns.substring(0, choosedcollumns.length - 1);
             chooseddatas = chooseddatas.substring(0, chooseddatas.length - 1);
             var resultsql = sql.replace("字段占位", choosedcollumns).replace("数据占位", chooseddatas)
-            $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + resultsql + "\" name='resultsql'></div>");
-            allEditedSql+=resultsql+";"
+            $("#tabs").append("<div>生成的sql为：<textarea id='sqltext' type='text'  name='resultsql'>" + resultsql + "</textarea>");
+            allEditedSql+=resultsql+";\n"
         }
         function generateAllEditinserts(){
-            $("#tabs").append("<div>生成的所有编辑过的sql为：<input id='sqltext' type='text'  value=\"" + allEditedSql + "\" name='resultsql'></div>");
+            $("#tabs").append("<div>生成的所有编辑过的sql为：<textarea id='sqltext' type='text'  name='allresultsql'>" + allEditedSql + "</textarea>");
         }
 
         function handleOption(){
