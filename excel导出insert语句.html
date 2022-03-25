@@ -17,7 +17,8 @@
     <input type="checkbox" id="selectAll" />全选
     <input type="checkbox" id="selectNotEmpty" />选中非空以及去掉id
     <button onclick="parseinsert()">解析insert</button>
-    <button onclick="generateinsert()">生成选中字段的insert</button>
+    <button onclick="generateinsert()">缓存并生成本条insert</button>
+    <button onclick="generateAllEditinserts()">生成所有insert</button>
     <button onclick="addcolumn()">增加字段</button>
     <span>   当前选中的sql
     <select id="sqlIndex" onchange="sqlIndexChange()">
@@ -38,6 +39,7 @@
         var currentSqlIndex=0;
         var sqlIndex=[]
         var sqlArray=new Array();//多条sql组成数组
+        var allEditedSql=""
 
         function importf(obj) {//导入
             if (!obj.files) {
@@ -220,10 +222,12 @@
             }
             choosedcollumns = choosedcollumns.substring(0, choosedcollumns.length - 1);
             chooseddatas = chooseddatas.substring(0, chooseddatas.length - 1);
-
             var resultsql = sql.replace("字段占位", choosedcollumns).replace("数据占位", chooseddatas)
-
             $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + resultsql + "\" name='resultsql'></div>");
+            allEditedSql+=resultsql+";"
+        }
+        function generateAllEditinserts(){
+            $("#tabs").append("<div>生成的所有编辑过的sql为：<input id='sqltext' type='text'  value=\"" + allEditedSql + "\" name='resultsql'></div>");
         }
 
         function handleOption(){
