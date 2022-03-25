@@ -15,10 +15,14 @@
     <input id="sqltext" type="text" placeholder="请输入sql文本！" name="" />
     <p></p>
     <input type="checkbox" id="selectAll" />全选
-    <input type="checkbox" id="selectNotEmpty" />选中非空
+    <input type="checkbox" id="selectNotEmpty" />选中非空以及去掉id
     <button onclick="parseinsert()">解析insert</button>
     <button onclick="generateinsert()">生成选中字段的insert</button>
     <button onclick="addcolumn()">增加字段</button>
+    <span>   当前选中的sql
+    <select id="sqlIndex" onchange="sqlIndexChange()">
+    </select>
+    </span>
     <p id="demo"></p>
     <div id="tabs"></div>
     <script>
@@ -31,6 +35,9 @@
                      */
         var wb;//读取完成的数据
         var rABS = false; //是否将文件读取为二进制字符串
+        var currentSqlIndex=0;
+        var sqlIndex=[]
+        var sqlArray=new Array();//多条sql组成数组
 
         function importf(obj) {//导入
             if (!obj.files) {
@@ -123,34 +130,35 @@
 
 
 
-      //记录添加的字段的数量
-      var addid = 0;
+        //记录添加的字段的数量
+        var addid = 0;
         // //记录sql语句的数量
-        // var sqlnums;
         function parseinsert() {
             var r = /(?<=\()[^\)]+(?=\))/g;
-            // var sqlgroup = $("#sqltext").val().split(";")
-            // sqlgroup.remove("");
-            // sqlnums = sqlgroup.length;
-            // if (sqlnums == 1) {
-                var sql = $("#sqltext").val();
-                var collumns = (sql.match(r)[0]).replace(/\"/g, "\"").split(",");
-                var datas = (sql.match(r)[1]).split(",");
-                var result = "";
-                for (var i = 0; i < collumns.length; i++) {
-                    result += "<div><label for='ckb" + i + "'><input type='checkbox' id='" + i + "'name='ckbs' >" + collumns[i] + "</label>";
-                    result += "<input id='sqltext" + i + "' type='text'  name='data" + i + "' value=\"" + datas[i] + "\"></input></div>";
-
+            sqlArray= $("#sqltext").val().split(";")
+            sqlArray= sqlArray.filter((x) => x !== '');
+               //首次解析
+            if(sqlIndex.length==0){
+                for(var index=0;index<sqlArray.length;index++){
+                    sqlIndex.push(index)
                 }
-                $("#tabs").empty().append(result);
-                addid = 0
-            // } else {
+                handleOption();  
+            }
+            // var sql = $("#sqltext").val();
+            var sql=sqlArray[currentSqlIndex]
+            var collumns = (sql.match(r)[0]).replace(/\"/g, "\"").split(",");
+            var datas = (sql.match(r)[1]).split(",");
+            var result = "";
+            for (var i = 0; i < collumns.length; i++) {
+                result += "<div><label for='ckb" + i + "'><input type='checkbox' id='" + i + "'name='ckbs_" + collumns[i] + "' >" + collumns[i] + "</label>";
+                result += "<input id='sqltext" + i + "' type='text'  name='data" + i + "' value=\"" + datas[i] + "\"></input></div>";
 
-            // }
+            }
+            $("#tabs").empty().append(result);
+            addid = 0
         }
 
         function addcolumn() {
-
             var result = "";
             result += "<div><label for='ckb'><input type='text' id='columns" + addid + "' placeholder='请输入字段名'></label>";
             result += "<input  type='text'  id='datas" + addid + "' placeholder='请输入数据'></input></div>";
@@ -158,8 +166,6 @@
             $("#tabs").append(result);
         }
         function generateinsert() {
-
-
             var labels = document.getElementsByTagName("input");
             var ids = [];
             for (var i = 0; i < labels.length; i++) {
@@ -173,7 +179,8 @@
             var choosedcollumns = "";
             var chooseddatas = "";
             var r = /(?<=\()[^\)]+(?=\))/g;
-            var sql = $("#sqltext").val();
+            // var sql = $("#sqltext").val();
+            var sql=sqlArray[currentSqlIndex]
             if (sql != null && sql != "") {
                 var collumns = (sql.match(r)[0]).replace(/\"/g, "\"").split(",");
                 var datas = (sql.match(r)[1]).split(",");
@@ -188,7 +195,6 @@
                         chooseddatas = chooseddatas + $("#sqltext" + i).val() + ","
                     }
                 }
-
 
             }
             if (addid > 0) {
@@ -220,6 +226,23 @@
             $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + resultsql + "\" name='resultsql'></div>");
         }
 
+        function handleOption(){
+            //处理下拉菜单中的所有选项内容
+           var sqlIndexElement=document.getElementById("sqlIndex");
+           //清空下拉列表项，设置保留的个数
+           sqlIndexElement.length=0;
+           for (var i = 0; i < sqlIndex.length; i++) {
+                var optionElement=document.createElement("option");//创建option元素
+                optionElement.value=sqlIndex[i]
+                optionElement.innerHTML=sqlIndex[i]
+                sqlIndexElement.appendChild(optionElement);
+                }
+        }
+        function sqlIndexChange(){
+            var options=$("#sqlIndex option:selected"); 
+            currentSqlIndex=options.val()
+            parseinsert()
+        }
 
         $(function () {
             var i = 0;
@@ -231,7 +254,6 @@
                         var obj = labels[i];
                         //判断是否是checkbox并且已经选中
                         if (obj.type == "checkbox" && obj.id != "selectAll"&& obj.id != "selectNotEmpty") {
-
                             obj.checked = true
                         }
                     }
@@ -260,14 +282,12 @@
                         var obj = labels[i];
                         //判断是否是checkbox并且已经选中
                         if (obj.type == "checkbox" && obj.id != "selectNotEmpty"&& obj.id != "selectAll") {
-                            if($("#sqltext" + obj.id).val()==null ||$("#sqltext" + obj.id).val()==""){
+                            if(obj.name=="ckbs_`id`"||obj.name=="ckbs_id"|| $("#sqltext" + obj.id).val()==null ||$("#sqltext" + obj.id).val()==""){
                                 obj.checked = false
                             }
-                            else{ obj.checked = true
-                             
+                            else{ 
+                                obj.checked = true
                             }
-                           
-                            
                         }
                     }
                 } else {
@@ -299,6 +319,7 @@
             }
         };
 
+        
 
     </script>
 </body>
