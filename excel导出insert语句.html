@@ -36,7 +36,7 @@
             if (!obj.files) {
                 return;
             }
-            var f = obj.files[0];
+            var file = obj.files[0];
             var reader = new FileReader();
             reader.onload = function (e) {
                 var data = e.target.result;
@@ -54,7 +54,7 @@
 
                 var columnsAndValuesjson = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
                 var values=" values( ";
-                var columns="insert into xxxx (";
+                var columns="insert into "+file.name.replace(".xls","")+" (";
                 var insertsql="";
 
                 for (var i = 0, l = columnsAndValuesjson.length; i < l; i++) {
@@ -77,7 +77,7 @@
                         //console.log(key + ':' + columnsAndValuesjson[i][key]);
                     }
                     insertsql+=columns.substring(0, columns.length - 1)+")"+values.substring(0, values.length - 1)+");";
-                    columns="insert into xxxx (";
+                    columns="insert into "+file.name.replace(".xls","")+" (";
                     values=" values( ";
                 }
                // $("#tabs").append("<div>生成的sql为：<input id='sqltext' type='text'  value=\"" + insertsql + "\" name='resultsql'></div>");
@@ -86,9 +86,9 @@
     
             };
             if (rABS) {
-                reader.readAsArrayBuffer(f);
+                reader.readAsArrayBuffer(file);
             } else {
-                reader.readAsBinaryString(f);
+                reader.readAsBinaryString(file);
             }
         }
 
