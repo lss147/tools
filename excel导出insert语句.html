@@ -61,11 +61,12 @@
                 //wb.SheetNames[0]是获取Sheets中第一个Sheet的名字
                 //wb.Sheets[Sheet名]获取第一个Sheet的数据
                 //删掉文件名可能出现的下划线数字后缀
+                //.replace(fileName.match(reg)[0],"")
                 var reg=/_\d+$/;
                 var fileName=file.name.replace(".xls","")
                 var columnsAndValuesjson = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
                 var values=" values( ";
-                var columns="insert into "+fileName.replace(fileName.match(reg)[0],"")+" (";
+                var columns="insert into "+fileName+" (";
                 var insertsql="";
 
                 for (var i = 0, l = columnsAndValuesjson.length; i < l; i++) {
