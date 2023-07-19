@@ -63,7 +63,7 @@
                 //删掉文件名可能出现的下划线数字后缀
                 //.replace(fileName.match(reg)[0],"")
                 var reg=/_\d+$/;
-                var fileName=file.name.replace(".xls","")
+                var fileName=file.name.split(".")[0]
                 var columnsAndValuesjson = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
                 var values=" values( ";
                 var columns="insert into "+fileName+" (";
@@ -71,6 +71,7 @@
 
                 for (var i = 0, l = columnsAndValuesjson.length; i < l; i++) {
                     for (var key in columnsAndValuesjson[i]) {
+                        
                         columns+=key+",";
                         if(isNaN(columnsAndValuesjson[i][key])){
                             if(columnsAndValuesjson[i][key]=='null'){
@@ -152,11 +153,18 @@
             // var sql = $("#sqltext").val();
             var sql=sqlArray[currentSqlIndex]
             var collumns = (sql.match(r)[0]).replace(/\"/g, "\"").split(",");
-            var datas = (sql.match(r)[1]).split(",");
+            var dataStr = (sql.match(r)[1]).trim();
             var result = "";
             for (var i = 0; i < collumns.length; i++) {
                 result += "<div><label for='ckb" + i + "'><input type='checkbox' id='" + i + "'name='ckbs_" + collumns[i] + "' >" + collumns[i] + "</label>";
-                result += "<input id='sqltext" + i + "' type='text'  name='data" + i + "' value=\"" + datas[i] + "\"></input></div>";
+                var tempValue
+                if(dataStr.charAt(0)=='\''&&i < collumns.length-1){
+                    tempValue=dataStr.split("\',\'")[0]+"'"
+                    dataStr=dataStr.slice(tempValue.length+1,dataStr.length).trim()
+                }else{
+                    tempValue=dataStr//最后一条
+                }
+                result += "<input id='sqltext" + i + "' type='text'  name='data" + i + "' value=\"" + tempValue + "\"></input></div>";
 
             }
             $("#tabs").empty().append(result);
