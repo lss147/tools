@@ -159,7 +159,10 @@
                 result += "<div><label for='ckb" + i + "'><input type='checkbox' id='" + i + "'name='ckbs_" + collumns[i] + "' >" + collumns[i] + "</label>";
                 var tempValue
                 if(dataStr.charAt(0)=='\''&&i < collumns.length-1){
-                    tempValue=dataStr.split("\',\'")[0]+"'"
+                    tempValue=dataStr.split("\',")[0]+"'"
+                    dataStr=dataStr.slice(tempValue.length+1,dataStr.length).trim()
+                }else if(i < collumns.length-1){
+                    tempValue=dataStr.split(",")[0]
                     dataStr=dataStr.slice(tempValue.length+1,dataStr.length).trim()
                 }else{
                     tempValue=dataStr//最后一条
